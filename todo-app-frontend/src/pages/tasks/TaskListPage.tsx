@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiPlusCircle, FiEdit, FiTrash2, FiCheckCircle, FiCircle, FiClock } from 'react-icons/fi';
 import taskService, { Task, TaskStatus } from '@/services/task.service';
-import authService from '@/services/auth.service';
+import { useAuth } from '@/contexts/AuthContext'; 
 
 const TaskListPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const loadTasks = async () => {
     try {
@@ -29,14 +30,14 @@ const TaskListPage = () => {
   }, []);
 
   const handleLogout = () => {
-    authService.logout();
+    logout(); 
     navigate('/login');
   };
 
   const handleStatusChange = async (task: Task, newStatus: TaskStatus) => {
     try {
       await taskService.updateTask(task.id, { status: newStatus });
-      loadTasks(); // Załaduj zadania ponownie aby zaktualizować listę
+      loadTasks(); 
     } catch (err) {
       setError('Wystąpił błąd podczas aktualizacji statusu zadania');
       console.error(err);
@@ -67,7 +68,6 @@ const TaskListPage = () => {
     }
   };
 
-  const user = authService.getUser();
 
   return (
     <div className="min-h-screen bg-gray-50">

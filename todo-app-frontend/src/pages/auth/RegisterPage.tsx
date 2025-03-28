@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import authService from '@/services/auth.service';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Imię musi zawierać co najmniej 2 znaki').optional(),
@@ -19,7 +19,8 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const [registerError, setRegisterError] = useState<string | null>(null);
+  const { register: registerUser } = useAuth();
+  
   const {
     register,
     handleSubmit,
@@ -30,17 +31,18 @@ const RegisterPage = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      setRegisterError(null);
-      await authService.register({
+      await registerUser({
         name: data.name,
         email: data.email,
         password: data.password,
       });
-      navigate('/login', { state: { message: 'Rejestracja przebiegła pomyślnie. Możesz się teraz zalogować.' } });
+      
+
+      navigate('/login');
+      
+
     } catch (error: any) {
-      setRegisterError(
-        error.response?.data?.message || 'Wystąpił błąd podczas rejestracji'
-      );
+ 
     }
   };
 
@@ -48,12 +50,6 @@ const RegisterPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-center mb-6">Rejestracja</h1>
-
-        {registerError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {registerError}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
